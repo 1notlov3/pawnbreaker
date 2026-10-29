@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en" data-theme="game" data-script="latin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d2a24">
+<title>Pawnbreaker — a chess roguelike with relics</title>
+<link rel="canonical" href="https://pawnbreaker.app/">
+<meta name="description" content="Pawnbreaker, a chess roguelike: beat the bot, earn gold for captures, buy relics in the shop and face bosses — atomic chess, fog of war, antichess.">
+<meta property="og:title" content="Pawnbreaker — chess, but you break the rules">
+<meta property="og:site_name" content="Pawnbreaker">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@PawnbreakerGame">
+<meta name="application-name" content="Pawnbreaker">
+<meta name="apple-mobile-web-app-title" content="Pawnbreaker">
+<meta property="og:description" content="A chess roguelike: upgrade your pieces, stack relics, beat bosses named after openings. Free alpha — play in your browser.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pawnbreaker.app/">
+<meta property="og:image" content="https://pawnbreaker.app/og.png">
+<meta name="twitter:image" content="https://pawnbreaker.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
+<meta property="og:image:alt" content="Pawnbreaker — chess roguelike">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ru_RU">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="preload" href="vendor/fonts/rubik-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="vendor/chessground/chessground.base.css">
+<link rel="stylesheet" href="vendor/chessground/chessground.cburnett.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div id="crt" aria-hidden="true"></div>
+<a class="skip" href="#board-frame" data-i18n="ui.skip"></a>
+<div id="app">
+  <header id="hud" class="panel hidden">
+    <div class="hud-box hb-round"><small data-i18n="ui.round"></small><b id="hud-round">1 / 9</b></div>
+    <div class="hud-box hb-gold"><small data-i18n="ui.gold"></small><b><span class="coin">$</span><span id="hud-gold">0</span></b></div>
+    <button id="btn-menu" class="btn btn-icon" data-i18n-attr="title:ui.pauseMenu;aria-label:ui.pauseMenu"></button>
+  </header>
+  <main id="main">
+
+  <section id="screen-game" class="hidden" data-i18n-attr="aria-label:ui.game">
+    <div id="boss-banner" class="hidden"></div>
+    <div id="botbar" class="panel">
+      <div id="bot-avatar" class="portrait"></div>
+      <div class="bot-meta">
+        <div class="bot-id"><b id="bot-name"></b><small id="bot-title"></small></div>
+        <div id="bubble" class="hidden"></div>
+      </div>
+    </div>
+    <div id="relics-game" class="relic-row compact"></div>
+    <div id="open-goal" class="hidden" data-i18n-attr="aria-label:ui.roundDebut"></div>
+    <div id="board-frame"><div id="board-wrap"><div id="board" class="cg-wrap"></div></div></div>
+    <div id="infoline" class="panel"><div id="movelog"></div><div id="status"></div></div>
+    <div class="controls game-controls">
+      <button id="btn-hint" class="btn btn-blue tool" data-i18n-attr="title:ui.hint"></button>
+      <button id="btn-undo" class="btn btn-orange tool" data-i18n-attr="title:ui.undo"></button>
+      <button id="btn-confuse" class="btn btn-purple tool" data-i18n-attr="title:ui.confuse"></button>
+      <button id="btn-resign" class="btn btn-red tool" data-i18n-attr="title:g.tResign"></button>
+    </div>
+  </section>
+
+  <section id="screen-shop" class="hidden" data-i18n-attr="aria-label:ui.shop">
+    <div id="relics-shop" class="relic-row panel"></div>
+    <div class="shop panel">
+      <div class="shop-head"><h2 class="title-big" data-i18n="ui.shop"></h2><div id="shop-next" class="sub"></div></div>
+      <div class="shop-top">
+        <div class="shop-btns">
+          <button id="btn-next" class="btn btn-red" data-i18n="ui.nextRound"></button>
+          <button id="btn-reroll" class="btn btn-green"></button>
+        </div>
+        <div id="shelf" class="shelf"></div>
+      </div>
+      <div class="shop-bottom">
+        <div class="vslot"><div class="slot-lbl" data-i18n="ui.voucher"></div><div id="voucher"></div></div>
+        <div class="pslot"><div class="slot-lbl" data-i18n="ui.chests"></div><div id="packs"></div></div>
+      </div>
+    </div>
+    <div id="inv-line" class="panel"></div>
+  </section>
+
+  <section id="screen-over" class="hidden" data-i18n-attr="aria-label:ui.runResults">
+    <div id="over-body"></div>
+    <div class="controls"><button id="btn-restart" class="btn btn-green btn-big" data-i18n="menu.new"></button><button id="btn-over-menu" class="btn btn-blue btn-big" data-i18n="ui.toMenu"></button></div>
+  </section>
+  </main>
+
+  <div id="pack" class="hidden">
+    <div id="pack-anim"></div>
+    <h2 class="title-big pack-title"></h2>
+    <p class="pack-sub"></p>
+    <div id="pack-cards" class="cards-row"></div>
+    <div id="pack-detail" class="hidden" aria-live="polite"></div>
+    <button id="pack-skip" class="btn btn-blue" data-i18n="g.skip"></button>
+  </div>
+  <div id="opening" class="hidden" role="dialog" aria-modal="true" aria-labelledby="op-title">
+    <div class="op-top"><span id="op-wallet" class="op-wallet"></span><button id="op-menu" class="btn btn-icon" data-i18n-attr="title:ui.pauseMenu;aria-label:ui.pauseMenu"></button></div>
+    <h2 id="op-title" class="title-big pack-title" data-i18n="op.title"></h2>
+    <p id="op-sub" class="pack-sub"></p>
+    <div id="op-cards" class="cards-row"></div>
+    <div id="op-detail" aria-live="polite"></div>
+    <button id="op-reroll" class="btn btn-purple"></button>
+  </div>
+  <div id="inspect" class="hidden"><div class="ins-box panel"><div id="ins-body"></div><div id="ins-btns" class="ins-btns"></div></div></div>
+  <div id="toast" class="hidden"></div>
+  <div id="modal" class="hidden" role="dialog" aria-modal="true"><div class="modal-box panel"><div class="modal-body"></div><div class="modal-btns"></div></div></div>
+</div>
+
+<!-- main menu -->
+<section id="screen-menu" class="layer hidden" data-i18n-attr="aria-label:menu.main">
+  <button id="m-fb" class="btn btn-ghost btn-sm fb-chip" data-fb="menu" data-i18n-attr="aria-label:fb.title;title:fb.title"><span data-i18n="fb.menu"></span></button>
+  <button id="m-lang" class="btn btn-ghost btn-sm lang-btn" data-i18n-attr="aria-label:lang.choose;title:lang.choose"><span id="m-lang-code"></span></button>
+  <div class="menu-wrap">
+    <button id="m-logo" class="logo" data-i18n-attr="aria-label:meta.name">
+      <span id="m-logo-ico" class="logo-ico"></span>
+      <span class="logo-l2 logo-name" translate="no">Pawnbreaker</span>
+    </button>
+    <p id="m-tagline" class="tagline"></p>
+    <div id="m-save" class="save-chip" hidden></div>
+    <nav class="menu-list" data-i18n-attr="aria-label:menu.menu">
+      <button id="m-continue" class="mbtn" hidden data-autofocus><span data-i18n="menu.continue"></span></button>
+      <button id="m-new" class="mbtn" data-autofocus><span data-i18n="menu.new"></span></button>
+      <button id="m-tut" class="mbtn"><span data-i18n="menu.tutorial"></span></button>
+      <button id="m-coll" class="mbtn"><span data-i18n="menu.collection"></span> <span id="m-coll-n" class="mcount tnum"></span></button>
+      <button id="m-set" class="mbtn"><span data-i18n="menu.settings"></span></button>
+    </nav>
+    <p id="m-best" class="menu-foot"></p>
+  </div>
+  <span id="m-ver" class="ver-tag" translate="no">Alpha v0.3</span>
+</section>
+
+<!-- pause -->
+<div id="sheet-pause" class="layer sheet hidden" role="dialog" aria-modal="true" aria-labelledby="p-title">
+  <div class="sheet-box panel">
+    <h2 id="p-title" class="sheet-title" data-i18n="pause.title"></h2>
+    <p id="p-sub" class="sheet-sub tnum"></p>
+    <div class="menu-list">
+      <button id="p-resume" class="mbtn primary" data-autofocus><span data-i18n="menu.continue"></span></button>
+      <button id="p-set" class="mbtn"><span data-i18n="menu.settings"></span></button>
+      <button id="p-tut" class="mbtn"><span data-i18n="menu.tutorial"></span></button>
+      <button id="p-fb" class="mbtn" data-fb="pause"><span data-i18n="fb.title"></span></button>
+      <button id="p-menu" class="mbtn"><span data-i18n="pause.exit"></span></button>
+    </div>
+    <p class="sheet-note" data-i18n="pause.note"></p>
+  </div>
+</div>
+
+<!-- settings -->
+<div id="sheet-newrun" class="layer sheet hidden" role="dialog" aria-modal="true" aria-labelledby="nr-title">
+  <div class="sheet-box panel">
+    <div class="sheet-head"><h2 id="nr-title" class="sheet-title" data-i18n="nr.title"></h2><button class="btn btn-icon btn-close" data-close="sheet-newrun" data-i18n-attr="aria-label:g.close">✕</button></div>
+    <div id="nr-body"></div>
+    <button id="nr-start" class="btn btn-big btn-green nr-start" data-i18n="nr.start" data-autofocus></button>
+  </div>
+</div>
+<div id="settings" class="layer sheet hidden" role="dialog" aria-modal="true" aria-labelledby="set-title">
+  <div class="sheet-box panel">
+    <div class="sheet-head"><h2 id="set-title" class="sheet-title" data-i18n="menu.settings"></h2><button class="btn btn-icon btn-close" data-close="settings" data-i18n-attr="aria-label:g.close">✕</button></div>
+    <div id="set-body"></div>
+  </div>
+</div>
+
+<!-- language picker -->
+<div id="sheet-lang" class="layer sheet hidden" role="dialog" aria-modal="true" aria-labelledby="lang-title">
+  <div class="sheet-box panel">
+    <div class="sheet-head"><h2 id="lang-title" class="sheet-title" data-i18n="lang.title"></h2><button class="btn btn-icon btn-close" data-close="sheet-lang" data-i18n-attr="aria-label:g.close">✕</button></div>
+    <div id="lang-body" data-i18n-attr="aria-label:lang.title"></div>
+  </div>
+</div>
+
+<!-- tutorial -->
+<div id="tutorial" class="layer sheet hidden" role="dialog" aria-modal="true" data-i18n-attr="aria-label:menu.tutorial">
+  <div class="tut-box">
+    <div class="sheet-head"><h2 class="sheet-title" data-i18n="menu.tutorial"></h2><button id="tut-skip" class="btn btn-ghost btn-sm" data-i18n="g.skip"></button></div>
+    <div id="tut-step" aria-live="polite"></div>
+    <div id="tut-dots" class="dots"></div>
+    <div class="tut-nav"><button id="tut-prev" class="btn btn-blue" data-i18n="tut.back"></button><button id="tut-next" class="btn btn-green" data-autofocus></button></div>
+  </div>
+</div>
+
+<!-- relic collection -->
+<div id="collection" class="layer sheet hidden" role="dialog" aria-modal="true" aria-labelledby="coll-title">
+  <div class="sheet-box panel tall">
+    <div class="sheet-head"><h2 id="coll-title" class="sheet-title" data-i18n="coll.title"></h2><button class="btn btn-icon btn-close" data-close="collection" data-i18n-attr="aria-label:g.close" data-autofocus>✕</button></div>
+    <div id="coll-body"></div>
+  </div>
+</div>
+
+<!-- first-run coach marks -->
+<div id="coach" class="hidden" role="dialog" aria-modal="true" data-i18n-attr="aria-label:ui.hint">
+  <div class="coach-hole"></div>
+  <div class="coach-bubble panel"><p></p><div class="coach-btns"><button class="btn btn-ghost btn-sm coach-off" data-i18n="coach.off"></button><button class="btn btn-green btn-sm coach-ok" data-i18n="coach.ok"></button></div></div>
+</div>
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/lang/ru.js"></script>
+<script src="js/lang/en.js"></script>
+<script src="js/lang/es.js"></script>
+<script src="js/lang/pt-BR.js"></script>
+<script src="js/lang/de.js"></script>
+<script src="js/lang/fr.js"></script>
+<script src="js/lang/zh-Hans.js"></script>
+<script src="js/lang/ja.js"></script>
+<script src="js/lang/ko.js"></script>
+<script src="js/lang/tr.js"></script>
+<script>I18N.init();</script>
+<script src="js/fx.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/pix.js"></script>
+<script src="js/rules.js"></script>
+<script src="js/relics.js"></script>
+<script src="js/bot.js"></script>
+<script src="js/talk.js"></script>
+<script src="js/game.js"></script>
+<script src="js/meta.js"></script>
+<script src="js/feedback.js"></script>
+<script type="module" src="js/boot.js"></script>
+</body>
+</html>
