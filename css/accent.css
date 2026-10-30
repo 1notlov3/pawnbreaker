@@ -1,0 +1,94 @@
+/* v0.5 mockup — colour & accents on the chess-book layout (illuminated-manuscript palette)
+   lapis = primary action / HUD · vermilion-red = boss & danger · gold = money · rarity: sepia / green / blue / purple */
+:root {
+  --lapis: #1e4a86; --lapis-d: #16365f; --lapis-l: #dfe7f2;
+  --verm: #b3261e; --verm-l: #f6ddd6;
+  --gold-d: #8a6100; --gold: #d9a520; --gold-l: #f3dc8e;
+  --r-common: #7a6249; --r-uncommon: #2f7a3a; --r-rare: #2a63b8; --r-legendary: #7a3aa6;
+}
+/* ---------- primary actions: filled lapis with a gold hairline ---------- */
+.btn-green, #pd-go, .pd-go, .nr-start, #btn-next, .coach-ok, .fb-send {
+  background: var(--lapis) !important; --b: var(--lapis); color: #fff8ea !important; --gi: #fff8ea; border-color: var(--lapis-d) !important;
+  box-shadow: inset 0 0 0 2px var(--lapis), inset 0 0 0 3px var(--gold), 0 3px 0 var(--lapis-d) !important; }
+.btn-green .px.gi, .pd-go .px.gi, #btn-next .px.gi { --gi: #fff8ea; }
+.mbtn.primary { background: var(--lapis) !important; color: #fff8ea !important; border-color: var(--lapis-d) !important;
+  box-shadow: inset 0 0 0 3px var(--lapis), inset 0 0 0 4px var(--gold), 0 0 0 3px var(--page), 0 0 0 4px var(--lapis-d) !important; }
+.mbtn.primary .px.gi, .mbtn.primary .mico { --gi: var(--gold-l) !important; }
+.mbtn .mico .px.gi { --gi: var(--lapis); }
+/* secondary dark action (reroll) = ink with gold price */
+#btn-reroll { background: var(--ink3) !important; --b: var(--ink3); color: var(--page) !important; }
+#btn-reroll .price-pill, #btn-reroll b { color: var(--gold-l) !important; border-color: var(--gold) !important; }
+
+/* ---------- running head: a lapis band ---------- */
+#hud { background: var(--lapis-d) !important; border-bottom: 2px solid var(--gold) !important; box-shadow: none !important; margin: 0 -8px; padding: 4px 10px 4px !important; }
+.hud-box small { color: #b9c7dc !important; }
+.hud-box b { color: #fff8ea !important; }
+.hb-gold b, .hb-gold .px.gi { color: var(--gold-l) !important; --gi: var(--gold-l); }
+#hud .btn-icon { background: var(--lapis) !important; --b: var(--lapis); color: #fff8ea !important; --gi: #fff8ea; border-color: var(--gold) !important; box-shadow: none !important; }
+#hud .btn-icon .px.gi { --gi: #fff8ea; }
+
+/* ---------- opening strip: pale-lapis band, lapis spine, vermilion "next" ---------- */
+#open-goal { background: var(--lapis-l) !important; border: 1px solid var(--lapis) !important; border-left: 5px solid var(--lapis) !important; }
+#open-goal .og-name b { color: var(--lapis-d) !important; }
+#open-goal .og-star { color: var(--gold-d) !important; }
+#open-goal .og-ico { --gi: var(--lapis); border-right-color: #9fb3cf; }
+#open-goal .gm.done, #open-goal .gm.done.w { color: var(--lapis-d) !important; border-bottom-color: var(--lapis) !important; }
+#open-goal .gm.next { color: var(--verm) !important; border-bottom: 2px solid var(--verm) !important; background: #fff6e8 !important; }
+#open-goal .og-pay { color: var(--gold-d) !important; font-weight: 700; }
+#open-goal .og-pay.got { color: var(--r-uncommon) !important; }
+
+/* ---------- money: gold ---------- */
+.card .price, .voucher .price, .chest .price { background: var(--gold-l) !important; color: #3a2a00 !important; border-color: var(--gold-d) !important; box-shadow: 0 2px 0 var(--gold-d) !important; }
+.card.poor .price, .chest:disabled .price, .voucher:disabled .price { background: var(--page) !important; color: var(--verm) !important; border-color: var(--verm) !important; box-shadow: none !important; }
+.op-bonus, .op-wallet b, #opening .op-wallet, .cash-row b, .cash-wallet, .inv-gold, .stat .gold { color: var(--gold-d) !important; }
+.cash-sec b, .modal-body .total b { color: var(--gold-d) !important; }
+
+/* ---------- rarity: coloured frames, art boxes and badges ---------- */
+.card, .rtile, .chest, .enh-row { --rk: var(--r-common); --tint: #e0d2b4; }
+.r-uncommon, .card.r-uncommon, .rtile.r-uncommon, .chest.r-uncommon { --rk: var(--r-uncommon); --tint: #b9d6b0; }
+.r-rare, .card.r-rare, .rtile.r-rare, .chest.r-rare { --rk: var(--r-rare); --tint: #b8cdec; }
+.r-legendary, .card.r-legendary, .rtile.r-legendary, .chest.r-legendary { --rk: var(--r-legendary); --tint: #d8c3ea; }
+.card:not(.op-card) .cface, .chest .pack { border-color: var(--rk) !important;
+  box-shadow: inset 0 0 0 3px var(--pb-paper), inset 0 0 0 4px var(--rk), 0 5px 0 rgba(0,0,0,.4) !important; }
+.card:not(.op-card).r-legendary .cface { box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 0 4px var(--rk), 0 5px 0 rgba(0,0,0,.4) !important; }
+.card:not(.op-card) .cart { box-shadow: inset 0 0 0 1.5px var(--rk) !important; }
+.card:not(.op-card) .crar, #pack-detail .pd-rar { background: var(--rk) !important; color: #fff8ea !important; border-color: var(--rk) !important; }
+.card:not(.op-card) .ctype { color: var(--rk) !important; font-weight: 700; }
+.rtile { box-shadow: inset 0 0 0 2px var(--rk), 0 2px 0 rgba(27,22,18,.25) !important; }
+.relic-row.compact .rtile { box-shadow: inset 0 0 0 2px var(--rk), 0 2px 0 rgba(27,22,18,.25) !important; }
+
+/* ---------- boss & danger: red ---------- */
+#boss-banner { background: var(--verm-l) !important; border-top: 2px solid var(--verm) !important; border-bottom: 2px solid var(--verm) !important; border-left: 5px solid var(--verm) !important; }
+#boss-banner b { color: var(--verm) !important; } #boss-banner .chipmini { border-color: var(--verm) !important; --gi: var(--verm); }
+#boss-banner .bb-stat { color: #fff8ea !important; background: var(--verm) !important; border-color: var(--verm) !important; }
+.boss-card .tag { color: #fff8ea !important; background: var(--verm) !important; border-color: var(--verm) !important; padding: 2px 10px; }
+.boss-card h3 { color: var(--verm) !important; }
+.boss-token, .boss-card .boss-token .px.gi { --gi: var(--verm); }
+#modal:has(.boss-card) .modal-box { border-color: var(--verm) !important; box-shadow: inset 0 0 0 3px var(--page), inset 0 0 0 4px var(--verm), 0 6px 0 rgba(27,22,18,.3) !important; }
+#modal .btn-red, .modal-btns .btn-red { background: var(--verm) !important; --b: var(--verm); color: #fff8ea !important; border-color: #7a1810 !important; box-shadow: inset 0 0 0 2px var(--verm), inset 0 0 0 3px var(--gold), 0 3px 0 #7a1810 !important; }
+.op-boss { color: var(--verm) !important; border-color: var(--verm) !important; --gi: var(--verm); }
+.over-title { color: var(--verm) !important; }
+.rbadge { background: var(--verm) !important; }
+
+/* ---------- tools: stronger stock colours, ink labels ---------- */
+:root { --t-hint: #bcd0ea; --t-undo: #efd58f; --t-conf: #d6c6ec; --t-res: #efb9ad; }
+.tool .cnt { background: var(--lapis) !important; color: #fff8ea !important; border-color: var(--lapis-d) !important; }
+
+/* ---------- board highlights: last move gold, selected lapis, moves lapis dots ---------- */
+cg-board square.last-move { background-color: rgba(225,170,30,.48) !important; }
+cg-board square.selected { background-color: rgba(30,74,134,.5) !important; }
+cg-board square.move-dest { background: radial-gradient(rgba(30,74,134,.78) 20%, rgba(30,74,134,0) 22%) !important; }
+cg-board square.oc.move-dest { background: radial-gradient(transparent 0%, transparent 74%, rgba(30,74,134,.8) 76%) !important; }
+cg-board square.move-dest:hover { background: rgba(30,74,134,.25) !important; }
+cg-board square.check { box-shadow: inset 0 0 0 3px var(--verm) !important; background: rgba(179,38,30,.28) !important; }
+
+/* ---------- headings & small accents ---------- */
+.shop-head .title-big, .pack-title, #opening .pack-title, .sheet-title, .tut-card h2 { color: var(--lapis-d) !important; }
+.slot-lbl, .rr-head, .rr-head * { color: var(--lapis) !important; }
+.logo-ico .px.gi, .logo-ico { --gi: var(--gold-d); }
+.logo-name, .logo-l2 { color: var(--lapis-d) !important; }
+.tagline { border-color: var(--gold) !important; }
+.op-card.sel .cface { box-shadow: 0 0 0 3px var(--page), 0 0 0 5px var(--lapis), 0 6px 0 rgba(27,22,18,.2) !important; }
+.lang-opt.on, .seg button.on, .switch.on { background: var(--lapis) !important; border-color: var(--lapis) !important; }
+h2.win { color: var(--lapis-d) !important; } h2.warn { color: var(--verm) !important; }
+:focus-visible { outline-color: var(--lapis) !important; }
