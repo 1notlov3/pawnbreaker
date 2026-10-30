@@ -58,7 +58,7 @@
     run = { side, tier, round: 1, gold: Math.max(0, 4 + window.tierMods(tier).startGold), earned: 0, fined: 0, wins: 0, relics: [], vouchers: [], enh: {}, items: { hints: 1, undo: 0, confuse: 0 }, next: {},
       openings: [], debuts: window.rollDebuts(side), sig: null, offer: null, sanctuarySq: null, treasureSq: null, voucher: null, shop: null, bought: [], lastPick: null, pack: null };
     pendingGold = 0; inPlayFlag = true;
-    AN('run_start', { tier, side, pick: window.__nrPick || side, n: (+localStorage.getItem('pb-runs') || 0) + 1 }); try { localStorage.setItem('pb-runs', (+localStorage.getItem('pb-runs') || 0) + 1); } catch (e) { /* ignore */ }
+    { let nRuns = 0; try { nRuns = +localStorage.getItem('pb-runs') || 0; localStorage.setItem('pb-runs', nRuns + 1); } catch (e) { /* storage blocked (3rd-party iframe) */ } AN('run_start', { tier, side, pick: window.__nrPick || side, n: nRuns + 1 }); }
     window.__nrPick = null;
     if (opt.autoPick) { run.sig = run.debuts[0]; startGame(); return; }
     run.startGold = run.gold;
