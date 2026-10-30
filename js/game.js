@@ -318,7 +318,7 @@
 
   // ---------- relic visuals ----------
   function relicArt(def, cls) {
-    return def.art ? '<img class="piece-art ' + (cls || '') + '" src="vendor/pieces/cburnett/' + def.art + '.svg" alt="">' : PX(def.icon, cls);
+    return def.art && !/^gi:/.test(def.icon || '') ? '<img class="piece-art ' + (cls || '') + '" src="vendor/pieces/cburnett/' + def.art + '.svg" alt="">' : PX(def.icon, cls);
   }
   function relicBadge(r) { return r.id === 'stable' ? '$' + (r.n || 1) : ''; }
   function renderRelics(el, mode) {
@@ -1258,7 +1258,7 @@
     $('status').addEventListener('click', () => { const h = $('status').dataset.enh; if (h) inspect('enh', h); });
     // board badge per enhancement: its pixel icon in the square's corner + glow colour
     const st = document.createElement('style');
-    st.textContent = Object.keys(window.ENH).map(id => { const e = window.ENH[id]; return 'cg-board square.enh-' + id + '{--ec:' + e.color + ';--eb:url(' + window.PIX.url(e.icon) + ')}'; }).join('\n');
+    st.textContent = Object.keys(window.ENH).map(id => { const e = window.ENH[id]; return 'cg-board square.enh-' + id + '{--ec:' + e.color + ';--eb:url(' + window.PIX.url(e.pxIcon || e.icon) + ')}'; }).join('\n');
     document.head.appendChild(st);
     window.FX.initGL(); window.FX.tilt($('pack-cards')); window.FX.tilt($('shelf')); window.FX.tilt($('packs')); window.FX.tilt($('ins-body'));
     $('btn-hint').onclick = useHint; $('btn-confuse').onclick = useConfuse; $('btn-undo').onclick = undo;

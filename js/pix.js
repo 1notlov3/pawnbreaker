@@ -229,7 +229,13 @@
     };
   }
   const cache = {};
-  function url(name) { if (!cache[name]) cache[name] = canvasFor(I[name] || (/^g:/.test(name) ? composed(name) : I.skull)); return cache[name]; }
-  function img(name, cls, alt) { return '<img class="px ' + (cls || '') + '" src="' + url(name) + '" alt="' + (alt || '') + '" draggable="false">'; }
+  function url(name) { if (/^gi:/.test(name)) return 'assets/gi/' + name.slice(3) + '.svg'; if (!cache[name]) cache[name] = canvasFor(I[name] || (/^g:/.test(name) ? composed(name) : I.skull)); return cache[name]; }
+  // 'gi:<file>' (and the aliased UI names) are game-icons.net silhouettes drawn in one ink through a CSS mask (css/cards.css).
+  function gi(name) { if (/^gi:/.test(name)) return name.slice(3); const a = window.GI_ALIAS; return a && a[name] || null; }
+  function img(name, cls, alt) {
+    const g = gi(name);
+    if (g) { const u = "url('assets/gi/" + g + ".svg')"; return '<span class="px gi ' + (cls || '') + '"' + (alt ? ' role="img" aria-label="' + alt + '"' : ' aria-hidden="true"') + '><i style="-webkit-mask-image:' + u + ';mask-image:' + u + '"></i></span>'; }
+    return '<img class="px ' + (cls || '') + '" src="' + url(name) + '" alt="' + (alt || '') + '" draggable="false">';
+  }
   window.PIX = { url, img, names: Object.keys(I), GLYPHS: Object.keys(GLYPH), BADGES: Object.keys(BADGE) };
 })();

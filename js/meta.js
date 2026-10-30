@@ -290,7 +290,8 @@
       '<h3 class="set-h">' + tx('set.privacy') + '</h3>' +
       '<div class="set-row"><div class="set-lbl"><b>' + tx('fb.title') + '</b><small>' + tx('set.fbSub') + '</small></div><button class="btn btn-purple btn-sm" data-fb="settings">' + tx('set.fbBtn') + '</button></div>' +
       row('analytics', tx('set.analytics'), tx('set.analyticsSub'), sw('analytics', !(window.PBA && window.PBA.off))) +
-      '<p class="set-note ver-note">Pawnbreaker · ' + ((window.PB_CONFIG && window.PB_CONFIG.versionLabel) || '') + '</p>';
+      '<p class="set-note ver-note">Pawnbreaker · ' + ((window.PB_CONFIG && window.PB_CONFIG.versionLabel) || '') + '</p>' +
+      '<p class="set-note credit-note" translate="no">Item icons: <a href="https://game-icons.net" target="_blank" rel="noopener">game-icons.net</a> by ' + (window.GI_AUTHORS || []).join(', ') + ' · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a></p>';
   }
   function onSetClick(e) {
     const b = e.target.closest('[data-set], [data-act-set]'); if (!b || b.dataset.lang) return;

@@ -1,0 +1,86 @@
+/* Item cards & icons — "ink on parchment".
+   Icons: game-icons.net silhouettes (CC BY 3.0, see CREDITS.md), rendered as one flat ink through a CSS mask.
+   Scope: relic / upgrade / trick cards (not the opening cards), voucher, chests, relic tiles, collection rows, item icons. */
+:root { --pb-ink: #1d1712; --pb-paper: #e9dec4; --pb-rule: #6d5b45;
+  --pb-paper-tex: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .27  0 0 0 0 .18  0 0 0 .09 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>"); }
+
+/* ---- icon: a masked span, colour = --gi (paper on dark UI, ink on parchment) ---- */
+/* default colour: paper (dark UI); parchment surfaces set --gi to ink */
+.px.gi { position: relative; display: inline-block; vertical-align: middle; flex: 0 0 auto; image-rendering: auto; filter: none !important; text-shadow: none; }
+.px.gi > i { position: absolute; inset: 0; background: var(--gi, var(--pb-paper)); -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; }
+.px.gi.i16 { width: 16px; height: 16px; } .px.gi.i21 { width: 21.33px; height: 21.33px; } .px.gi.i37 { width: 37.33px; height: 37.33px; }
+.px.gi.i48 { width: 48px; height: 48px; } .px.gi.i64 { width: 64px; height: 64px; }
+
+/* rarity tints for picture boxes / tiles */
+.card, .rtile, .chest, .enh-row { --tint: #d6cbb0; }
+.r-uncommon, .card.r-uncommon, .rtile.r-uncommon, .chest.r-uncommon { --tint: #b8c7a1; }
+.r-rare, .card.r-rare, .rtile.r-rare, .chest.r-rare { --tint: #dba796; }
+.r-legendary, .card.r-legendary, .rtile.r-legendary, .chest.r-legendary { --tint: #e2c370; }
+
+/* ---- item cards (relic, upgrade, trick, collection, inspect) ---- */
+.card:not(.op-card) .card-in, .chest .pack, .vface, .rtile { animation: none !important; }
+.card:not(.op-card).tilting .card-in { transform: none !important; }
+.card:not(.op-card) .sheen, .card:not(.op-card) .rflag, .card:not(.op-card) .cback { display: none !important; }
+.card:not(.op-card) .cface, .vface, .chest .pack {
+  background: var(--pb-paper) var(--pb-paper-tex) !important; color: var(--pb-ink) !important;
+  border: 2px solid var(--pb-ink) !important; border-radius: 3px !important;
+  box-shadow: inset 0 0 0 3px var(--pb-paper), inset 0 0 0 4px var(--pb-ink), 0 5px 0 rgba(0,0,0,.45) !important;
+  filter: none; --gi: var(--pb-ink); }
+.card:not(.op-card) .cface { padding: 8px 7px 9px !important; gap: 5px !important; justify-content: flex-start !important; }
+.card:not(.op-card) .ctype { order: 3; background: none !important; color: var(--pb-rule) !important; padding: 0 !important; margin: 0 !important;
+  font-size: 9px !important; letter-spacing: .12em !important; text-transform: uppercase; border-radius: 0 !important; }
+.card:not(.op-card) .ctype:empty { display: none; }
+.card:not(.op-card) .cart { order: 1; border: 0 !important; border-radius: 0 !important;
+  background: var(--tint) !important; box-shadow: inset 0 0 0 1px var(--pb-ink) !important; display: flex; align-items: center; justify-content: center; }
+.card:not(.op-card):not(.compact) .cart { width: 100% !important; aspect-ratio: 1 / .86 !important; height: auto !important; max-height: none !important; }
+.card:not(.op-card) .cart .px:not(.eb) { width: 62% !important; height: auto !important; aspect-ratio: 1; }
+.card:not(.op-card) .cname { order: 2; color: var(--pb-ink) !important; text-shadow: none !important; font-size: 13px !important; line-height: 1.1 !important;
+  letter-spacing: .01em; text-align: center; flex: 0 0 auto !important; min-height: 26px; display: block !important; max-width: 100%; overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; }
+.card.compact:not(.op-card) .cname { font-size: 12px !important; letter-spacing: 0; min-height: 0; }
+.card:not(.op-card) .cname small { display: block; font-size: 10px !important; }
+.card:not(.op-card) .cname small { text-transform: none; font-weight: 500; letter-spacing: 0; color: var(--pb-rule) !important; }
+.card:not(.op-card) .cdesc { order: 4; background: none !important; color: var(--pb-ink) !important; text-shadow: none !important; border-radius: 0 !important;
+  border-top: 1px solid var(--pb-ink); padding: 6px 2px 0 !important; }
+.card:not(.op-card) .cdesc em, .card:not(.op-card) .crepl { color: #8e2a2a !important; }
+.card:not(.op-card) .crar { background: var(--tint) !important; color: var(--pb-ink) !important; text-shadow: none !important; border: 1px solid var(--pb-ink) !important;
+  box-shadow: none !important; border-radius: 2px !important; text-transform: uppercase; letter-spacing: .08em; font-size: 11px !important; }
+.card:not(.op-card).r-legendary .cface { box-shadow: inset 0 0 0 3px var(--pb-paper), inset 0 0 0 4px var(--pb-ink), 0 5px 0 rgba(0,0,0,.45) !important; }
+.card:not(.op-card).locked .cface { filter: brightness(.5) saturate(.3) !important; }
+.card.locked .cart .px { display: none !important; }
+.card.locked .cart::after { content: '?'; font-size: 34px; font-weight: 700; color: var(--pb-rule); }
+.card.mini:not(.op-card) .cface { min-height: 0 !important; }
+.card.mini:not(.op-card) .cname { font-size: clamp(11px, 3.4vw, 13px) !important; overflow-wrap: break-word; }
+.coll-grid .card.mini .cface { min-height: 0 !important; }
+/* upgrade card: the piece stays, the upgrade icon is an ink stamp in the corner */
+.cart.enh-art .piece-art { width: 70% !important; height: 70% !important; filter: none !important; }
+.cart.enh-art .eb, .enh-chip .eb { background: var(--pb-paper); border: 1px solid var(--pb-ink); border-radius: 50%; padding: 0; --gi: var(--pb-ink); }
+.cart.enh-art .eb > i, .enh-chip .eb > i { inset: 16%; }
+.cart.enh-art .eb { width: 30% !important; height: auto !important; aspect-ratio: 1; right: 4px !important; top: 4px !important; }
+.card.compact .cart.enh-art .eb { width: 34% !important; right: 2px !important; top: 2px !important; }
+.enhcard.sel .card-in { box-shadow: 0 0 0 3px var(--gold) !important; }
+
+/* ---- voucher & chests: same printed stock ---- */
+.vface, .chest .pack { padding: 8px 6px 9px !important; gap: 4px !important; }
+.chest .stripes, .chest .pack::before, .chest .pack::after { display: none !important; }
+.vface { --tint: #e2c370; }
+.vface .px, .chest .cicon { width: 46px !important; height: 46px !important; margin: 0 !important; padding: 4px 14px; box-sizing: content-box;
+  background: var(--tint); box-shadow: inset 0 0 0 1px var(--pb-ink); }
+.voucher.big .vface .px, .chest.big .cicon { width: 72px !important; height: 72px !important; }
+.vname, .chest .cname { color: var(--pb-ink) !important; text-shadow: none !important; font-size: 13px !important; }
+.voucher.big .vname { font-size: 14px !important; }
+.chest .csize { background: none !important; color: var(--pb-rule) !important; font-size: 12px !important; }
+.chest .cdesc { background: none !important; color: var(--pb-ink) !important; }
+.chest:disabled .pack { filter: brightness(.6) saturate(.4); }
+
+/* ---- relic tiles (shop + in-game) ---- */
+.rtile:not(.empty) { background: var(--tint) !important; border-color: var(--pb-ink) !important; border-radius: 4px !important;
+  box-shadow: inset 0 0 0 2px var(--pb-paper), 0 3px 0 rgba(0,0,0,.45) !important; --gi: var(--pb-ink); }
+.rtile .px.gi { width: 30px; height: 30px; }
+.relic-row.compact .rtile .px.gi { width: 25px; height: 25px; }
+
+/* ---- collection rows (upgrades / vouchers / consumables) + owned upgrade chips ---- */
+.enh-row .ei:has(.gi) { background: var(--pb-paper) var(--pb-paper-tex) !important; border-radius: 3px !important; box-shadow: inset 0 0 0 1px var(--pb-ink), inset 0 0 0 3px var(--pb-paper), inset 0 0 0 4px var(--pb-ink) !important; --gi: var(--pb-ink); }
+.enh-row .ei .px.gi { width: 24px; height: 24px; }
+.enh-row.locked .ei .px.gi { opacity: .3; }
+.enh-chip { background: var(--pb-paper) !important; border-radius: 4px !important; }
+.credit-note a { color: inherit; text-decoration: underline; }
