@@ -8,7 +8,8 @@
 | Engine | Stockfish.js 11 | GPL-3.0 |
 | Move validation / SAN | chess.js 1.4.0 | BSD-2-Clause |
 | Font | Rubik (variable) | SIL OFL 1.1 |
-| Item icons (relics, upgrades, vouchers, consumables, chests, hint / undo / confuse) | [game-icons.net](https://game-icons.net), vendored in `assets/gi/`, recoloured by CSS. Per-item list: `ICONS.md` | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
+| Book font | EB Garamond (variable, subset), Copyright 2017 The EB Garamond Project Authors (https://github.com/octaviopardo/EBGaramond12); `vendor/fonts/EBGaramond-OFL.txt` | SIL OFL 1.1 |
+| Item and interface icons (relics, upgrades, vouchers, consumables, chests, hint / undo / confuse, menu buttons, bot and boss portraits) | [game-icons.net](https://game-icons.net), vendored in `assets/gi/`, recoloured by CSS. Per-item list: `ICONS.md` | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
 | Other pixel icons, background shader | Original, drawn in code (`js/pix.js`, `js/fx.js`) | Same as the game |
 
 No Lichess sounds and no Balatro assets (art, audio or music) are used.
@@ -28,3 +29,12 @@ Item icons by the following game-icons.net authors, used under [Creative Commons
 - Lord Berandas (http://berandas.deviantart.com): 1 icon
 - Heavenly Dog (http://www.gnomosygoblins.blogspot.com): 1 icon
 - John Redman (http://www.uniquedicetowers.com): 1 icon
+
+## Interface icons: game-icons.net (CC BY 3.0)
+
+Menu, toolbar, bot and boss portrait icons, same licence and the same changes as the item icons (background square removed, single ink colour). Which icon is used where: the "Interface icons" table in [ICONS.md](ICONS.md).
+
+- Lorc (https://lorcblog.blogspot.com): 16 icons
+- Delapouite (https://delapouite.com): 10 icons
+- Faithtoken (http://fungustoken.deviantart.com): 1 icon
+- Guard13007 (https://guard13007.com): 1 icon

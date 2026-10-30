@@ -176,3 +176,38 @@ All item icons are from [game-icons.net](https://game-icons.net), licensed [CC B
 | ui counter | bulb | light-bulb | Lorc |
 | ui counter | undo | return-arrow | Lorc |
 | ui counter | spiral | spiral-arrow | Lorc |
+
+## Interface icons
+
+| kind | name | icon | author |
+|---|---|---|---|
+| ui | menu | hamburger-menu | Delapouite |
+| ui | crown | crown | Lorc |
+| ui | play | play-button | Guard13007 |
+| ui | resume | play-button | Guard13007 |
+| ui | book | rule-book | Delapouite |
+| ui | gear | cog | Lorc |
+| ui | cards | card-pick | Faithtoken |
+| ui | coin | coins | Delapouite |
+| ui | coin-loss | coins | Delapouite |
+| ui | debut | scroll-unfurled | Lorc |
+| ui | flag | flying-flag | Lorc |
+| ui | check | check-mark | Delapouite |
+| ui | chat | chat-bubble | Delapouite |
+| ui | globe | globe | Lorc |
+| ui | back | return-arrow | Lorc |
+| ui | skull | crowned-skull | Lorc |
+| ui | av-rookie | robot-golem | Lorc |
+| ui | av-grinder | vintage-robot | Lorc |
+| ui | av-atomic | mushroom-cloud | Lorc |
+| ui | av-fog | fog | Delapouite |
+| ui | av-misere | duality-mask | Lorc |
+| ui | av-hill | mountaintop | Lorc |
+| ui | av-threecheck | crossed-swords | Lorc |
+| ui | av-royalqueen | jewel-crown | Delapouite |
+| ui | av-mines | mine-explosion | Lorc |
+| ui | av-masked | carnival-mask | Delapouite |
+| ui | av-hourglass | sands-of-time | Lorc |
+| ui | av-pillar | sergeant | Delapouite |
+| ui | av-forward | charging-bull | Delapouite |
+| ui | av-hydra | hydra | Lorc |

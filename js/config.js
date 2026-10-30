@@ -6,7 +6,7 @@
 //   analytics: { provider: 'plausible', plausibleDomain: 'pawnbreaker.me' }
 //   analytics: { provider: 'umami', umamiHost: 'https://cloud.umami.is', umamiWebsite: '<website-id>' }
 window.PB_CONFIG = {
-  version: '0.4.1-alpha', versionLabel: 'Alpha v0.4.1',
+  version: '0.4.2-alpha', versionLabel: 'Alpha v0.4.2',
   feedback: { endpoint: 'https://silentforms.com/api/submit', accessKey: '15f051dac920487ad556db7a7f52e7c8388a67b8ca74ddb947c6ac85cb845a74', mailto: 'mgrachev+pawnbreaker@mail.grokbot.com' },
   analytics: { provider: 'local' }
 };
