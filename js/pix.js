@@ -156,7 +156,7 @@
     crown: a => a.m(['G...G...G', 'GG.GGG.GG', 'GGGGGGGGG', 'GRGGBGGNG', 'GGGGGGGGG', 'ggggggggg'], 3, 5)
   };
 
-  // ---------- t32: composed icons for the 120-item set ----------
+  // ---------- t32: composed icons for the item set ----------
   // 'g:<glyph>:<colour>:<badge>' = a 13px glyph in a palette ramp + a small badge in the bottom-right corner.
   // Shared glyphs keep the set coherent; glyph × colour × badge keeps every item distinguishable (tests check uniqueness).
   const RAMP = { G: 'Gyg', B: 'Blb', R: 'RQr', N: 'Nmn', P: 'Pvp', S: 'Sts', O: 'OGo', W: 'WWw', U: 'UAu', Q: 'QWq', L: 'Lyn', D: 'DSK' };
@@ -192,7 +192,17 @@
     back: ['....c.......', '...cc.......', '..chccccc...', '.chhhhhhcc..', '..chcccchcc.', '...cc...chc.', '....c....cc.', '.........cc.', '........cc..', '..ccccccc...'],
     bolt: ['.......ccc..', '......chc...', '.....chc....', '....chc.....', '...chcccc...', '..cccccc....', '.....chc....', '....chc.....', '...chc......', '..cc........', '.c..........'],
     padlock: ['...dddddd...', '..dd....dd..', '..d......d..', '..d......d..', 'cccccccccccc', 'chhhhhhhhhhc', 'chcccddccccc', 'chcccddccccc', 'chccccdccccc', 'cccccccccccc', '.dddddddddd.'],
-    chain: ['.ccc........', 'c...c.......', 'c...c.......', '.cc.cccc....', '...cc...c...', '...c.cc.c...', '...c...cc...', '....ccc.cc..', '.......c...c', '.......c...c', '........ccc.']
+    chain: ['.ccc........', 'c...c.......', 'c...c.......', '.cc.cccc....', '...cc...c...', '...c.cc.c...', '...c...cc...', '....ccc.cc..', '.......c...c', '.......c...c', '........ccc.'],
+    // v0.4 glyphs (120 relics)
+    crown: ['c....cc....c', 'cc..chhc..cc', 'chccchhccchc', 'chhcchhcchhc', 'cccccccccccc', 'chdchdchdchc', 'cccccccccccc', 'dddddddddddd'],
+    key: ['.ccc........', 'chhhc.......', 'ch.hcccccccc', 'chhhcddddddc', '.ccc...cc.cc', '.......dd.dd'],
+    drum: ['d..........d', '.d........d.', '..cccccccc..', '.chhhhhhhhc.', '.cccccccccc.', '.cdccdccdcc.', '.ccdccdccdc.', '.cdccdccdcc.', '.cccccccccc.', '..dddddddd..'],
+    horseshoe: ['.cc......cc.', 'chc......chc', 'chc......chc', 'cdc......cdc', 'chc......chc', 'cdc......cdc', 'chcc....cchc', '.chcc..cchc.', '..chhhhhhc..', '...cccccc...'],
+    scroll: ['.cccccccccc.', 'chhhhhhhhhhc', '.chhhhhhhhc.', '.cdddddhhhc.', '.chhhhhhhhc.', '.cddddddhhc.', '.chhhhhhhhc.', '.cdddhhhhhc.', 'chhhhhhhhhhc', '.cccccccccc.'],
+    skull: ['...cccccc...', '..chhhhhhc..', '.chhhhhhhhc.', '.chddhhddhc.', '.chddhhddhc.', '.chhhhhhhhc.', '..chhddhhc..', '...cchhcc...', '...cdcdcdc..', '....cccccc..'],
+    cross: ['....cccc....', '....chhc....', '....chhc....', 'ccccchhccccc', 'chhhhhhhhhhc', 'chhhhhhhhhhc', 'ccccchhccccc', '....chhc....', '....chhc....', '....cccc....'],
+    umbrella: ['.....cc.....', '...chhhhc...', '.chhhhhhhhc.', 'chhhhhhhhhhc', 'cdccdccdccdc', '.....d......', '.....d......', '.....d......', '...d.d......', '....d.......'],
+    potion: ['....cccc....', '.....dd.....', '.....dd.....', '....cddc....', '...chhhhc...', '..chhhhhhc..', '.cchhhhhhcc.', '.cccccccccc.', '.cccccccccc.', '..cccccccc..', '...dddddd...']
   };
   const BADGE = {
     none: null,

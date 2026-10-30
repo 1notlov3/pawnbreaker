@@ -112,7 +112,71 @@
     { id: 'noCastle', rarity: 'common', icon: 'g:rook:D:x', cat: 'debuff', start: e => { e.state.castle.k = e.state.castle.q = false; return 1; } },
     // --- boss ---
     { id: 'scout', rarity: 'common', icon: 'g:eye:B:plus', cat: 'boss' },
-    { id: 'bomb', rarity: 'common', icon: 'g:bomb:L:coin', cat: 'boss', cap: e => (e.variant === 'atomic' ? 1 : 0) }
+    { id: 'bomb', rarity: 'common', icon: 'g:bomb:L:coin', cat: 'boss', cap: e => (e.variant === 'atomic' ? 1 : 0) },
+
+    // ===== v0.4: +45 relics (120 in total). Extra hook fields (game.js): move e.{variant, board, ctx, tags}; loss r.minus
+    // (cuts the fine by $N); start e.avoid (squares the round's book lines use); win S.{board, botPieces, hints, sig, caps}.
+    // Passive ones (shop, interest, echo, second wind, midas, opening prep, minesweeper) are read by id in game.js.
+    // --- captures ---
+    { id: 'firstBlood', rarity: 'common', icon: 'g:sword:R:star', cat: 'capture', cap: e => (e.k === 1 ? 3 : 0) },
+    { id: 'bounty', rarity: 'common', icon: 'g:knight:B:sword', cat: 'capture', cap: e => (e.victim === 'n' || e.victim === 'b' ? 2 : 0) },
+    { id: 'rookBreaker', rarity: 'common', icon: 'g:rook:R:sword', cat: 'capture', cap: e => (e.victim === 'r' ? 3 : 0) },
+    { id: 'sniper', rarity: 'common', icon: 'g:bishop:B:sword', cat: 'capture',
+      cap: e => (e.by === 'b' && Math.max(Math.abs((e.m.from >> 3) - (e.m.to >> 3)), Math.abs((e.m.from & 7) - (e.m.to & 7))) >= 4 ? 2 : 0) },
+    { id: 'kingsBlade', rarity: 'uncommon', icon: 'g:king:S:sword', cat: 'king', cap: e => (e.by === 'k' ? 4 : 0) },
+    { id: 'fairTrade', rarity: 'uncommon', icon: 'g:scale:B:check', cat: 'capture', cap: e => (e.by === e.victim && e.by !== 'p' ? 3 : 0) },
+    { id: 'recapture', rarity: 'uncommon', icon: 'g:back:R:sword', cat: 'tactic', cap: e => (e.st.lastLost && e.st.lastLost.sq === e.m.to && e.st.lastLost.ply === e.st.myMoves - 1 ? 2 : 0) },
+    { id: 'combo', rarity: 'rare', icon: 'g:chain:R:bolt', cat: 'tactic', cap: e => { const prev = e.st.comboAt; if (prev === e.st.myMoves) return 0; e.st.comboAt = e.st.myMoves; return prev === e.st.myMoves - 1 ? 4 : 0; } },
+    { id: 'clearance', rarity: 'rare', icon: 'g:skull:S:coin', cat: 'endgame', cap: e => (e.botLeft === 1 ? 8 : 0) },
+    { id: 'snowball', rarity: 'rare', icon: 'g:pyramid:B:plus', cat: 'growth',
+      cap: (e, r) => { r.n = (r.n || 0) + 1; return 0; }, win: (s, r) => (Math.floor((r.n || 0) / 5) ? { gold: Math.floor((r.n || 0) / 5), note: tx('note.pcs', { n: r.n }) } : null) },
+    { id: 'midas', rarity: 'legendary', icon: 'g:crown:G:coin', cat: 'capture' },
+    // --- moves ---
+    { id: 'pawnStorm', rarity: 'common', icon: 'g:pawn:O:up', cat: 'pawn', move: e => (e.by === 'p' && e.toRow <= 3 && (e.st.storm = (e.st.storm || 0) + 1) <= 3 ? 1 : 0) },
+    { id: 'seventh', rarity: 'common', icon: 'g:rook:P:up', cat: 'tactic', move: e => (e.by === 'r' && e.toRow === 1 && (e.st.seventh = (e.st.seventh || 0) + 1) <= 2 ? 2 : 0) },
+    { id: 'fianchetto', rarity: 'common', icon: 'g:bishop:N:check', cat: 'debut',
+      move: e => { const st = e.st; st.fian = st.fian || []; if (e.by === 'b' && (e.to === 49 || e.to === 54) && st.fian.indexOf(e.to) === -1) { st.fian.push(e.to); return 2; } return 0; } },
+    { id: 'longCastle', rarity: 'common', icon: 'g:rook:G:arrowSide', cat: 'king', move: e => (e.m.castle === 'Q' ? 4 : 0) },
+    { id: 'outpost', rarity: 'common', icon: 'g:knight:G:star', cat: 'tactic', move: e => (e.by === 'n' && (e.toRow === 2 || e.toRow === 3) && (e.st.outpost = (e.st.outpost || 0) + 1) <= 3 ? 1 : 0) },
+    { id: 'relentless', rarity: 'uncommon', icon: 'g:flame:P:bolt', cat: 'tactic',
+      move: e => { const st = e.st; st.chkRun = e.check ? (st.chkRun || 0) + 1 : 0; if (st.chkRun >= 3 && !st.relentless) { st.relentless = 1; return 4; } return 0; } },
+    { id: 'fork', rarity: 'uncommon', icon: 'g:knight:R:bolt', cat: 'tactic',
+      move: e => (e.by === 'n' && e.check && window.Rules.attacksFrom(e.board, e.to, e.ctx, e.tags).some(i => e.board[i] === 'q' || e.board[i] === 'r') ? 4 : 0) },
+    { id: 'hatTrick', rarity: 'rare', icon: 'g:cup:R:star', cat: 'tactic', // follows each of your pieces by square; 3 captures by one piece pays once a game
+      move: e => { const st = e.st; st.ht = st.ht || {}; const c = (st.ht[e.m.from] || 0) + (st.caps !== (st.htC || 0) ? 1 : 0); st.htC = st.caps; delete st.ht[e.m.from]; st.ht[e.to] = c; if (c >= 3 && !st.hat) { st.hat = 1; return 6; } return 0; } },
+    { id: 'heckler', rarity: 'uncommon', icon: 'g:target:R:bolt', cat: 'boss', move: e => (e.variant === 'threecheck' && e.check ? 2 : 0) },
+    // --- losses ---
+    { id: 'fieldMedic', rarity: 'common', icon: 'g:cross:R:plus', cat: 'defense', loss: e => (e.t !== 'p' ? { bonus: 1 } : null) },
+    { id: 'spite', rarity: 'common', icon: 'g:queen:O:x', cat: 'defense', loss: e => (e.by === 'q' ? { bonus: 2 } : null) },
+    { id: 'barding', rarity: 'uncommon', icon: 'g:horseshoe:S:none', cat: 'defense', loss: e => (e.t === 'n' ? { free: true } : null) },
+    { id: 'lawyer', rarity: 'uncommon', icon: 'g:scroll:W:minus', cat: 'defense', loss: () => ({ minus: 1 }) },
+    // --- debuffs for the bot (never a pawn the round's book line needs; never in antichess, where fewer pieces help the bot) ---
+    { id: 'warDrums', rarity: 'common', icon: 'g:drum:R:none', cat: 'debuff',
+      start: e => { if (!e.boss || e.boss.id === 'misere') return 0; const c = [8, 9, 14, 15].filter(i => e.state.board[i] === 'p' && !e.avoid.has(i)); if (!c.length) return 0; e.state.board[c[Math.floor(Math.random() * c.length)]] = null; return 1; } },
+    { id: 'pawnTax', rarity: 'rare', icon: 'g:pawn:D:minus', cat: 'debuff',
+      start: e => { if (e.boss && e.boss.id === 'misere') return 0; const c = [8, 9, 14, 15].filter(i => e.state.board[i] === 'p' && !e.avoid.has(i)); let n = 0; for (; n < 2 && c.length; n++) e.state.board[c.splice(Math.floor(Math.random() * c.length), 1)[0]] = null; return n; } },
+    // --- after a win ---
+    { id: 'bishopPair', rarity: 'common', icon: 'g:bishop:P:plus', cat: 'piece', win: s => (s.board.filter(p => p === 'B').length >= 2 ? { gold: 3 } : null) },
+    { id: 'underdog', rarity: 'common', icon: 'g:pawn:G:star', cat: 'endgame', win: s => (s.myPieces < s.botPieces ? { gold: 4, note: s.myPieces + ':' + s.botPieces } : null) },
+    { id: 'rainyDay', rarity: 'common', icon: 'g:umbrella:B:coin', cat: 'economy', win: s => (s.gold < 5 ? { gold: 4, note: '$' + s.gold } : null) },
+    { id: 'marathon', rarity: 'common', icon: 'g:hourglass:G:star', cat: 'endgame', win: s => (s.myMoves >= 40 ? { gold: 4, note: tx('note.moves', { n: s.myMoves }) } : null) },
+    { id: 'luckyCoin', rarity: 'common', icon: 'g:clover:G:coin', cat: 'risk', win: () => ((window.__coin != null ? window.__coin : Math.random()) < 0.5 ? { gold: 5 } : null) },
+    { id: 'scholar', rarity: 'uncommon', icon: 'g:book:B:up', cat: 'economy', win: s => (Math.min(4, s.hints) ? { gold: Math.min(4, s.hints), note: tx('note.pcs', { n: s.hints }) } : null) },
+    { id: 'queenless', rarity: 'uncommon', icon: 'g:queen:W:x', cat: 'endgame', win: s => (s.board.indexOf('Q') === -1 ? { gold: 5 } : null) },
+    { id: 'signature', rarity: 'uncommon', icon: 'g:flag:P:check', cat: 'debut', win: s => (s.sig ? { gold: 5 } : null) },
+    { id: 'jackpot', rarity: 'rare', icon: 'g:dice:R:star', cat: 'risk', win: s => (s.gold % 10 === 7 ? { gold: 17, note: '$' + s.gold } : null) },
+    { id: 'minimalist', rarity: 'rare', icon: 'g:sword:W:minus', cat: 'risk', win: s => (s.caps <= 3 ? { gold: 6, note: tx('note.pcs', { n: s.caps }) } : null) },
+    // --- shop & economy (passive) ---
+    { id: 'chestKey', rarity: 'common', icon: 'g:key:G:none', cat: 'economy' },
+    { id: 'fence', rarity: 'common', icon: 'g:tag:O:coin', cat: 'economy' },
+    { id: 'allowance', rarity: 'common', icon: 'g:bag:B:plus', cat: 'economy' },
+    { id: 'dealer', rarity: 'uncommon', icon: 'g:dice:G:coin', cat: 'economy' },
+    { id: 'philosopher', rarity: 'legendary', icon: 'g:gem:R:star', cat: 'economy' },
+    // --- openings, bosses, copies, risk ---
+    { id: 'openingPrep', rarity: 'uncommon', icon: 'g:book:O:plus', cat: 'debut' },
+    { id: 'minesweeper', rarity: 'uncommon', icon: 'g:bomb:S:check', cat: 'boss' },
+    { id: 'echo', rarity: 'legendary', icon: 'g:gem:B:arrowSide', cat: 'copy' },
+    { id: 'secondWind', rarity: 'legendary', icon: 'g:potion:Q:up', cat: 'risk' }
   ];
   const VAL = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
   R.forEach(r => { r.price = PRICE[r.rarity]; });

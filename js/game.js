@@ -165,7 +165,10 @@
   }
   // owned(): real copies (shop / stacking). ups(): effective copies — the Mirror counts as one more copy of the relic to its right.
   const owned = () => { const u = {}; run.relics.forEach(r => { u[r.id] = (u[r.id] || 0) + 1; }); return u; };
-  const ups = () => { const u = owned(); delete u.mirror; run.relics.forEach((r, i) => { const nx = run.relics[i + 1]; if (r.id === 'mirror' && nx && nx.id !== 'mirror') u[nx.id] = (u[nx.id] || 0) + 1; }); return u; };
+  // v0.4: the Echo is a left-handed Mirror (copies the relic to its LEFT); neither copies a Mirror or an Echo.
+  const COPY = { mirror: 1, echo: -1 };
+  const copyOf = i => { const r = run.relics[i], c = r && COPY[r.id], t = c && run.relics[i + c]; return t && !COPY[t.id] ? t : null; };
+  const ups = () => { const u = owned(); run.relics.forEach((r, i) => { const t = copyOf(i); if (t) u[t.id] = (u[t.id] || 0) + 1; }); delete u.mirror; delete u.echo; return u; };
   const hasV = id => run.vouchers.indexOf(id) !== -1;
   const slotsMax = () => 5 + (hasV('slot') ? 1 : 0) + (hasV('slot2') ? 1 : 0);
   // Debuts: rounds 1–3 = debut 1, 4–6 = debut 2, 7–9 = debut 3. The 3rd round of each debut is its boss.
@@ -179,7 +182,8 @@
   const lastRound = () => run.round >= window.RUN_ROUNDS;
   const chapter = round => debutNo(round); // vouchers refresh once per debut (save field stays `voucher.ante` for compatibility)
   const price = p => (hasV('discount') ? Math.max(1, Math.round(p * 0.75)) : p);
-  const sellValue = def => (owned().pawnshop ? def.price : Math.max(1, Math.floor(def.price / 2))) + (hasV('sellPlus') ? 1 : 0);
+  const sellValue = def => (owned().pawnshop ? def.price : Math.max(1, Math.floor(def.price / 2))) + (hasV('sellPlus') ? 1 : 0) + 2 * (owned().fence || 0);
+  const packPrice = d => Math.max(1, price(d.price) - (owned().chestKey ? 1 : 0));
   const relicPrice = def => Math.max(1, price(def.price) - (owned().haggler ? 1 : 0));
 
   // Minefield boss: 2 mines on your half (internal rows 4–5) mirrored onto the bot's half, never on a square the
@@ -204,7 +208,8 @@
     shuffle([0, 7]).slice(0, Math.min(2, u.siege || 0)).forEach(i => { state.board[i] = null; state.castle[i === 0 ? 'q' : 'k'] = false; });
     if (run.next.confiscate) shuffle([8, 9, 10, 11, 12, 13, 14, 15]).slice(0, 2).forEach(i => { state.board[i] = null; });
     if (run.next.sabotage) { const mi = [1, 2, 5, 6].filter(i => state.board[i]); if (mi.length) { state.board[rand(mi)] = null; trig('sabotage'); } }
-    Object.keys(u).forEach(id => { const d = window.RELIC(id); if (d && d.start && d.start({ state, ctx, boss })) trig(id); });
+    const avoid = new Set(); [debutFor(run.round), run.sig && window.DEBUT(run.sig)].forEach(x => { if (x) x.line.forEach(v => { avoid.add(SQI(v.slice(0, 2))); avoid.add(SQI(v.slice(2, 4))); }); });
+    Object.keys(u).forEach(id => { const d = window.RELIC(id); if (d && d.start && d.start({ state, ctx, boss, avoid })) trig(id); });
     if (hasV('hintsub')) run.items.hints++;
     if (hasV('seedMoney')) { run.gold++; run.earned++; trig('seedMoney'); }
     if (hasV('undoSub') && (run.round - 1) % 3 === 0) { run.items.undo++; trig('undoSub'); }
@@ -494,6 +499,7 @@
     }
     const L = game.ledger, st = game.stats, pops = [];
     const relGold = (id, g) => { if (!g) return 0; L.rel[id] = (L.rel[id] || 0) + g; setTimeout(() => pulseRelic(id), 30); return g; };
+    if (!white && res.mined && u.minesweeper && R.colorOf(res.mined) === 'b') { const g = relGold('minesweeper', 3 * u.minesweeper); run.gold += g; run.earned += g; trig('minesweeper'); pops.push([m.to, '+$' + g, 'plus']); }
     if (white) {
       st.myMoves++;
       if (m.castle) st.castled = true;
@@ -502,6 +508,7 @@
         let g = CAP[R.typeOf(p)];
         if (tagFrom && tagFrom.id === 'holo') g *= 2;
         if (u.glass) { g *= 1 + u.glass; pulseRelic('glass'); }
+        if (u.midas) { g *= 1 + u.midas; pulseRelic('midas'); trig('midas'); }
         if (st.revenge) { g *= 3; st.revenge = 0; pulseRelic('revenge'); }
         L.capGold += g; L.capN++; st.caps++; gain += g;
         if (tagFrom && tagFrom.id === 'gold') { L.capGold += 2; gain += 2; }
@@ -527,7 +534,7 @@
         const nb = res.state.board, chk = R.inCheck(res.state, 'b', game.ctx);
         let disc = false;
         if (chk && m.to >= 0) { const b2 = nb.slice(); b2[m.to] = null; disc = R.inCheck(Object.assign({}, res.state, { board: b2 }), 'b', game.ctx); }
-        const ev = { by, m, check: chk, discovered: disc, to: m.to, toRow: m.to >> 3, ply: st.myMoves, botLeft: botLeft(nb), st, run };
+        const ev = { by, m, check: chk, discovered: disc, to: m.to, toRow: m.to >> 3, ply: st.myMoves, botLeft: botLeft(nb), st, run, variant: game.ctx.variant, board: nb, ctx: game.ctx, tags: res.state.tags };
         hooked('move').forEach(([d, c, rec]) => { const g0 = d.move(ev, rec); if (g0 > 0) { gain += relGold(d.id, g0 * c); trig(d.id); } });
       }
       if (gain) pops.push([m.to, '+$' + gain, 'plus']);
@@ -555,6 +562,7 @@
           for (const [d, c] of hooked('loss')) {
             const r0 = d.loss(ev); if (!r0) continue;
             if (r0.bonus) bonus += relGold(d.id, r0.bonus * c);
+            if (r0.minus) { cost = Math.max(0, cost - r0.minus * c); pulseRelic(d.id); trig(d.id); if (!cost) { why = d.id; break; } continue; }
             if (r0.free) { cost = 0; why = d.id; pulseRelic(d.id); trig(d.id); break; }
             if (r0.cap != null) { const left = Math.max(0, r0.cap * c - ev.paid); if (left < cost) { cost = left; why = cost ? '' : d.id; pulseRelic(d.id); trig(d.id); } }
             else if (r0.bonus) trig(d.id);
@@ -570,6 +578,7 @@
         if (u.revenge && game.ctx.variant !== 'misere') st.revenge = 1;
       });
       if (lost.length) {
+        st.lastLost = { sq: m.to, ply: st.myMoves };
         const real = Math.min(pay, run.gold + bonus);
         run.gold = Math.max(0, run.gold + bonus - pay); run.fined += real;
         L.loss += real; L.lossN += lost.length;
@@ -600,6 +609,7 @@
     const bw = game.ctx.up.bookworm || 0;
     if (bw) { run.gold += bw; run.earned += bw; game.ledger.rel.bookworm = (game.ledger.rel.bookworm || 0) + bw; pulseRelic('bookworm'); trig('bookworm'); }
     if (full && game.ctx.up.theory) { run.items.hints += game.ctx.up.theory; pulseRelic('theory'); trig('theory'); }
+    if (full && game.ctx.up.openingPrep) { run.items.undo += game.ctx.up.openingPrep; pulseRelic('openingPrep'); trig('openingPrep'); }
     if (game.last) coinsIn(sqPoint(game.last.to), g + bw);
     if (mult > 1) pulseRelic('debut');
     if (full) {
@@ -769,12 +779,13 @@
     b.forEach((p, i) => { if (p !== 'P') return; const r = (i >> 3) + 1, f = i & 7; if (r < 8 && ((f > 0 && b[r * 8 + f - 1] === 'P') || (f < 7 && b[r * 8 + f + 1] === 'P'))) chain++; });
     const S = { pawnsLeft: b.filter(p => p === 'P').length, gold: run.gold, boss: !!game.boss, castled: st.castled, relicCount: run.relics.length,
       wins: run.wins + 1, myMoves: st.myMoves, lost: st.lostW, reason: game.resultReason, lastBy: st.lastBy, myPieces: myLeft(b), kingPawns, chain,
-      cats: new Set(run.relics.map(r => (window.RELIC(r.id) || {}).cat)).size }, rows = [];
+      cats: new Set(run.relics.map(r => (window.RELIC(r.id) || {}).cat)).size,
+      board: b, botPieces: botLeft(b), hints: run.items.hints, sig: !!(run.sig && game.debut && game.debut.id === run.sig), caps: st.caps }, rows = [];
     run.relics.forEach((r, i) => {
-      let def = window.RELIC(r.id), pre = '';
-      if (r.id === 'mirror') { const nx = run.relics[i + 1]; if (!nx || nx.id === 'mirror') return; def = window.RELIC(nx.id); pre = tx('relic.mirror.name') + ': '; }
+      let def = window.RELIC(r.id), pre = '', rec = r;
+      if (COPY[r.id]) { const t = copyOf(i); if (!t) return; def = window.RELIC(t.id); rec = t; pre = tx('relic.' + r.id + '.name') + ': '; }
       if (!def.win) return;
-      const e = def.win(S, r); if (!e || !e.gold) return;
+      const e = def.win(S, rec); if (!e || !e.gold) return;
       trig(def.id);
       rows.push({ label: pre + def.name + (e.note ? ' (' + e.note + ')' : ''), g: e.gold, icon: def.icon, art: def.art, id: r.id });
     });
@@ -784,6 +795,7 @@
     game.over = true; game.busy = false; render();
     window.Talk.say(result.winner === 'w' ? 'lose' : result.winner === 'b' ? 'win' : 'draw');
     const anR = { round: run.round, opening: game.debut && game.debut.id, boss: game.boss ? game.boss.id : '', moves: game.stats.myMoves, reason: result.reason };
+    if (result.winner === 'b' && secondWind(result)) return;
     if (result.winner === 'b') { game.anReason = result.reason; window.FX.sfx('lose'); window.FX.addTrauma(0.5); return showGameOver(why(result.reason)); }
     if (result.winner !== 'w') return AN('round_draw', anR), window.FX.sfx('draw'), modal('<h2 class="draw">' + tx('g.draw') + '</h2><p>' + tx('g.drawText', { reason: why(result.reason) }) + '</p>', [[tx('g.replay'), startGame, 'btn-blue']]);
     game.resultReason = result.reason;
@@ -804,8 +816,9 @@
     if (game.boss && hasV('warChest')) { now.push([ic('g:chest:R:coin'), tx('voucher.warChest.name'), 4]); trig('warChest'); }
     const tre = Object.keys(game.tags).filter(k => game.tags[k].id === 'treasurer' && game.state.board[k] && R.colorOf(game.state.board[k]) === 'w').length;
     if (tre) { now.push([ic('g:bag:G:plus'), tx('enh.treasurer.name') + ' ×' + tre, tre]); trig('treasurer'); }
-    const per = u.broker ? 4 : 5, cap = Math.max(0, (hasV('safe') ? 10 : 5) + TM().interestCap), interest = Math.min(cap, Math.floor(run.gold / per));
-    if (interest) now.push([ic('broker'), tx('g.interest', { per, cap }), interest]);
+    const per = u.broker ? 4 : 5, cap = u.philosopher ? Infinity : Math.max(0, (hasV('safe') ? 10 : 5) + TM().interestCap), interest = Math.min(cap, Math.floor(run.gold / per));
+    if (interest) now.push([ic(u.philosopher ? 'g:gem:R:star' : 'broker'), tx('g.interest', { per, cap: cap === Infinity ? '∞' : cap }), interest, u.philosopher ? 'philosopher' : undefined]);
+    if (interest && u.philosopher) trig('philosopher');
     const payTotal = now.reduce((a, r) => a + r[2], 0), gameNet = inGame.reduce((a, r) => a + r[2], 0) + payTotal;
     run.gold += payTotal; run.earned += payTotal; run.wins++; pendingGold += payTotal; hud(game.boss);
     window.FX.juice('large', { at: [innerWidth / 2, $('board').getBoundingClientRect().top + $('board').offsetHeight / 2], flashEl: $('board-wrap'), sfx: 'win', colors: ['#eabc52', '#5fc58a', '#ffffff'] });
@@ -829,6 +842,16 @@
     if (META()) { if (lastRound()) META().clearSave(); else META().save(run, 'toShop'); META().coach('payout'); }
   }
 
+  // v0.4 Second Wind: a lost game is replayed once; the relic burns away (saved at once, so a reload can't keep it)
+  function secondWind(result) {
+    const i = run.relics.findIndex(r => r.id === 'secondWind'); if (i === -1) return false;
+    run.relics.splice(i, 1); trig('secondWind');
+    AN('second_wind', { round: run.round, reason: result.reason });
+    if (META()) META().save(run, 'game');
+    window.FX.sfx('upgrade');
+    modal('<h2 class="win">' + tx('g.secondWindT') + '</h2><p>' + PX('g:potion:Q:up', 'i16') + ' ' + tx('g.secondWindText', { reason: why(result.reason), name: tx('relic.secondWind.name') }) + '</p>', [[tx('g.replay'), startGame, 'btn-blue']]);
+    return true;
+  }
   // payout: rows land one by one (tick + relic tile jiggle), then the total counts up and coins burst
   function paySequence(nRows, total) {
     const rows = [...document.querySelectorAll('#modal .cash-row')], step = window.FX.reduce ? 0 : 140, t0 = window.FX.reduce ? 0 : 380;
@@ -863,7 +886,7 @@
   function rollRelic(weights, exclude) {
     const own = owned();
     if (hasV('luckyShelf') && weights === SHOP_W) weights = Object.assign({}, weights, { rare: weights.rare * 2 });
-    const runRules = (run.debuts || []).map(id => (window.DEBUT(id) || {}).rule), BREL = { lantern: 'fog', sapper: 'atomic', jester: 'misere', bomb: 'atomic' };
+    const runRules = (run.debuts || []).map(id => (window.DEBUT(id) || {}).rule), BREL = { lantern: 'fog', sapper: 'atomic', jester: 'misere', bomb: 'atomic', heckler: 'threecheck', minesweeper: 'mines' };
     const c = window.RELICS.filter(r => (!own[r.id] || (r.stack && own[r.id] < r.stack)) && exclude.indexOf(r.id) === -1 && weights[r.rarity] && (!BREL[r.id] || !runRules.length || runRules.indexOf(BREL[r.id]) !== -1));
     let x = Math.random() * c.reduce((a, r) => a + weights[r.rarity], 0);
     for (const r of c) { x -= weights[r.rarity]; if (x <= 0) return r; }
@@ -881,7 +904,7 @@
     return kinds.map(k => ({ kind: k, size: k === 'hint' ? Math.floor(Math.random() * 3) : k === 'enh' ? enhSize() : 0, sold: false }));
   }
   const packDef = o => (o.kind === 'enh' ? (d => Object.assign({ name: tx('pack.enh.name'), icon: 'pack-enh', desc: tx('pack.enh.desc', { k: d.pick > 1 ? d.pick : 1, n: d.n }) }, d))(window.PACKS.enh[o.size] || window.PACKS.enh[0]) : o.kind === 'hint' ? Object.assign({ name: tx('pack.hint.name'), icon: 'pack-hint', desc: tx('pack.hint.desc', { n: window.PACKS.hint[o.size].amount }) }, window.PACKS.hint[o.size]) : window.PACKS[o.kind]);
-  const rerollCost = () => Math.max(1, (hasV('coupon') ? 1 : 3) + (hasV('steadyReroll') ? 0 : run.shop.rerolls) + TM().reroll);
+  const rerollCost = () => (owned().dealer && !run.shop.rerolls ? 0 : Math.max(1, (hasV('coupon') ? 1 : 3) + (hasV('steadyReroll') ? 0 : run.shop.rerolls) + TM().reroll));
 
   function openShop() {
     run.round++;
@@ -892,7 +915,10 @@
     }
     run.shop = { relics: rollShelf(), packs: rollPacks(), rerolls: 0 };
     run.pack = null;
+    const al = (owned().allowance || 0) * Math.max(0, slotsMax() - run.relics.length);
+    if (al) { run.gold += al; run.earned += al; trig('allowance'); }
     show('screen-shop'); renderShop(true); shopBuys = 0;
+    if (al) toast(PX('g:bag:B:plus', 'i16') + ' ' + tx('g.allowanceToast', { name: tx('relic.allowance.name'), n: al }));
     AN('shop_open', { round: run.round, gold: run.gold });
     if (META()) { META().coach('shop'); META().coach('chest'); if (bossFor(run.round)) META().coach('boss'); }
   }
@@ -925,7 +951,7 @@
       ? '<button class="voucher" data-act="voucher"><span class="price' + (run.gold < price(v.price) ? ' poor' : '') + '">$' + price(v.price) + '</span><span class="vface">' + PX(v.icon, 'i37') + '<span class="vname">' + v.name + '</span></span></button>'
       : '<div class="card-sold small">' + (v ? tx('g.vBought') : tx('g.vAll')) + '<br><small>' + tx('g.vNext') + '</small></div>';
     $('packs').innerHTML = run.shop.packs.map((o, k) => {
-      const d = packDef(o), p = price(d.price);
+      const d = packDef(o), p = packPrice(d);
       if (o.sold) return '<div class="card-sold small">' + tx('g.opened') + '</div>';
       return '<button class="chest r-' + d.rarity + '" data-act="pack" data-k="' + k + '" style="--i:' + k + '"><span class="price' + (run.gold < p ? ' poor' : '') + '">$' + p + '</span><span class="pack"><span class="stripes"></span>' +
         PX(d.icon, 'i37 cicon') + '<span class="cname">' + d.name + '</span><span class="csize">' + (o.kind === 'hint' ? d.size + ' · ×' + d.amount : o.kind === 'tactic' ? (hasV('tacticPlus') ? tx('g.kOfN', { k: 1, n: 4 }) : tx('g.trickOf3')) : o.kind === 'relic' ? tx('g.kOfN', { k: 1, n: 3 }) : d.size + ' · ' + tx('g.kOfN', { k: d.pick, n: d.n + (hasV('bigChest') ? 1 : 0) })) + '</span></span></button>';
@@ -956,7 +982,8 @@
       card = relicCard(d, {});
       const nx = run.relics[k + 1];
       info = (d.grows ? '<p class="ins-state">' + tx('g.stableNow', { n: r.n || 1 }) + '</p>' : '') +
-        (r.id === 'mirror' ? '<p class="ins-state">' + (nx && nx.id !== 'mirror' ? tx('g.mirrorCopies', { name: window.RELIC(nx.id).name }) : tx('g.mirrorIdle')) + '</p>' : '') +
+        (COPY[r.id] ? '<p class="ins-state">' + (copyOf(k) ? tx('g.mirrorCopies', { name: window.RELIC(copyOf(k).id).name }) : tx(r.id === 'echo' ? 'g.echoIdle' : 'g.mirrorIdle')) + '</p>' : '') +
+        (r.id === 'snowball' ? '<p class="ins-state">' + tx('g.snowNow', { n: r.n || 0, g: Math.floor((r.n || 0) / 5) }) + '</p>' : '') +
         '<p class="ins-note">' + tx('g.relicPos', { n: k + 1, m: run.relics.length }) + '</p>';
       btns.push(['◀', () => moveRelic(k, -1), 'btn-blue', k === 0]);
       btns.push(['▶', () => moveRelic(k, 1), 'btn-blue', k === run.relics.length - 1]);
@@ -973,7 +1000,7 @@
       info = '<p class="ins-desc">' + v.desc + '</p><p class="ins-note">' + tx('g.voucherNote') + '</p>';
       if (kind === 'voucher') btns.push([tx('g.buyFor', { n: p }), () => buyVoucher(), 'btn-green', run.gold < p]);
     } else if (kind === 'pack') {
-      const o = run.shop.packs[k], d = packDef(o), p = price(d.price);
+      const o = run.shop.packs[k], d = packDef(o), p = packPrice(d);
       card = '<div class="chest big r-' + d.rarity + '"><span class="pack"><span class="stripes"></span>' + PX(d.icon, 'i64 cicon') + '<span class="cname">' + d.name + '</span></span></div>';
       info = '<p class="ins-desc">' + d.desc + '</p>';
       btns.push([tx('g.openFor', { n: p }), () => buyPack(k), 'btn-green', run.gold < p]);
@@ -1011,9 +1038,10 @@
   function sellRelic(i) {
     const r = run.relics[i]; if (!r) return; const d = window.RELIC(r.id);
     const tile = document.querySelector('#relics-shop .rtile[data-i="' + i + '"]'), from = tile ? tile.getBoundingClientRect() : null;
-    run.relics.splice(i, 1); run.gold += sellValue(d);
-    coinsIn(from ? [from.left + from.width / 2, from.top + from.height / 2] : $('relics-shop'), sellValue(d)); // HUD keeps the old value until coins land
-    toast(relicArt(d, 'i16') + ' ' + tx('g.soldToast', { name: d.name, n: sellValue(d) })); renderShop();
+    const v = sellValue(d); // priced before it leaves (selling the Fence itself still gets its bonus, as the button said)
+    run.relics.splice(i, 1); run.gold += v;
+    coinsIn(from ? [from.left + from.width / 2, from.top + from.height / 2] : $('relics-shop'), v); // HUD keeps the old value until coins land
+    toast(relicArt(d, 'i16') + ' ' + tx('g.soldToast', { name: d.name, n: v })); renderShop();
     window.FX.sfx('sell'); if (from) window.FX.burst(from.left + from.width / 2, from.top + from.height / 2, { n: 10, colors: ['#eabc52', '#ffffff'] });
   }
   function addRelic(d) {
@@ -1112,7 +1140,7 @@
   function buyPack(k) {
     const bigN = d => (hasV('bigChest') ? d.n + 1 : d.n);
     const o = run.shop.packs[k]; if (!o || o.sold) return;
-    const d = packDef(o), p = price(d.price); if (run.gold < p) return;
+    const d = packDef(o), p = packPrice(d); if (run.gold < p) return;
     run.gold -= p; o.sold = true; shopBuys++;
     AN('chest_opened', { kind: o.kind, size: o.size, price: p, round: run.round });
     const el = document.querySelector('.chest[data-k="' + k + '"]');
@@ -1290,6 +1318,6 @@
     saveNow: () => { if (!run || !inPlayFlag) return; if (run.offer && !$('opening').classList.contains('hidden')) { META().save(run, 'opening'); return; } if (!$('screen-shop').classList.contains('hidden')) META().save(run, 'shop'); else if (game && game.payout && game.over) META().save(run, 'toShop'); /* mid-round: the round-start save stands */ } };
   // test/debug hooks
   window.__game = { get run() { return run; }, get game() { return game; }, forceWin: reason => endGame({ winner: 'w', reason: reason || 'debug' }),
-    startGame: () => startGame(), opening: { reroll: () => opDoReroll(), pick: i => opPick(i), select: i => opSelect(i), cost: () => opRerollCost() }, move: m => playerMove(m), doMove: m => doMove(m), T: { sellValue, relicPrice, rerollCost, slotsMax, visibleSet, engineTags, buyPack, rollRelic, hasV }, openShop: () => openShop(), giveRelic: id => addRelic(window.RELIC(id)), ups, inspect, render: () => render(), shuffle, get pendingGold() { return pendingGold; } };
+    startGame: () => startGame(), opening: { reroll: () => opDoReroll(), pick: i => opPick(i), select: i => opSelect(i), cost: () => opRerollCost() }, move: m => playerMove(m), doMove: m => doMove(m), T: { sellValue, relicPrice, rerollCost, slotsMax, visibleSet, engineTags, buyPack, rollRelic, hasV }, openShop: () => openShop(), giveRelic: id => addRelic(window.RELIC(id)), ups, endGame: r => endGame(r), packPrice, sellRelic: i => sellRelic(i), inspect, render: () => render(), shuffle, get pendingGold() { return pendingGold; } };
   window.__startApp = init;
 })();

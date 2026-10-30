@@ -2,7 +2,7 @@
 
 Play: **https://pawnbreaker.app**
 
-Chess in the spirit of Balatro: beat the bot, earn gold for captures, buy relics, upgrade your pieces and face 12 bosses named after chess openings (atomic chess, fog of war, antichess, king of the hill, three-check, minefield and more). Static site — no build step; runs offline in the browser.
+Chess in the spirit of Balatro: beat the bot, earn gold for captures, collect 120 relics, upgrade your pieces and face 12 bosses named after chess openings (atomic chess, fog of war, antichess, king of the hill, three-check, minefield and more). Static site — no build step; runs offline in the browser.
 
 ## Run locally
 ```bash

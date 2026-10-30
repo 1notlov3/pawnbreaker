@@ -381,7 +381,7 @@
   function openTutorial() { tutI = 0; renderTut(); push('tutorial'); if (window.PBA) window.PBA.track('tutorial_open', { inRun: window.Game.inPlay() ? 1 : 0 }); }
 
   // ================= collection =================
-  // every collectable item: relics, upgrades, vouchers, tricks (t32: 75 + 20 + 16 + 9 = 120)
+  // every collectable item: relics, upgrades, vouchers, tricks (v0.4: 120 relics + 20 + 16 + 9 = 165)
   const collIds = () => window.RELICS.map(r => r.id).concat(Object.keys(window.ENH).map(id => 'enh:' + id), window.VOUCHERS.map(v => 'v:' + v.id), window.CONSUMABLES.map(c => 'cons:' + c.id));
   function openCollection() { openColl(false); }
   function openColl(again) {
