@@ -177,7 +177,7 @@
       info.innerHTML = PX('coin', 'i16') + '<span>' + (r.offer ? tx('op.where') : tx('g.roundNofM', { n: r.round, m: window.RUN_ROUNDS }) + ' · ' + window.DEBUT(r.debuts[Math.min(2, Math.ceil(r.round / 3) - 1)]).name) + ' · $' + r.gold + ' · ' + tx('menu.relicsN', { n: r.relics.length }) + '</span><small>' + fmtAgo(L.data.at) + (L.data.from !== SAVE_KEY ? ' · ' + tx('menu.fromBackup') : '') + '</small>';
       info.hidden = false;
     } else if (L.newer || L.error) {
-      info.innerHTML = PX('skull', 'i16') + '<span>' + (L.newer ? tx('save.newer') : tx('save.broken', { err: window.I18N.tables.ru['save.err.' + L.error] ? tx('save.err.' + L.error) : L.error })) + '</span>';
+      info.innerHTML = PX('skull', 'i16') + '<span>' + (L.newer ? tx('save.newer') : tx('save.broken', { err: window.I18N.known('save.err.' + L.error) ? tx('save.err.' + L.error) : L.error })) + '</span>';
       info.hidden = false;
     } else info.hidden = true;
     $('m-best').textContent = (best ? tx('menu.best', { n: best }) : tx('menu.firstRun')) + ' · ' + tx('menu.tierOpen', { n: tiers().max });

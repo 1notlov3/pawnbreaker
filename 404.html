@@ -19,16 +19,6 @@ a:focus-visible{outline:3px solid #eabc52;outline-offset:3px}
 </head>
 <body><main><div><h1>404</h1><p data-i18n-html="404.text">There is no such square on the board.<br>Head back to your game.</p><a href="/" data-i18n="404.home">Home</a></div></main>
 <script src="/js/i18n.js"></script>
-<script src="/js/lang/ru.js"></script>
-<script src="/js/lang/en.js"></script>
-<script src="/js/lang/es.js"></script>
-<script src="/js/lang/pt-BR.js"></script>
-<script src="/js/lang/de.js"></script>
-<script src="/js/lang/fr.js"></script>
-<script src="/js/lang/zh-Hans.js"></script>
-<script src="/js/lang/ja.js"></script>
-<script src="/js/lang/ko.js"></script>
-<script src="/js/lang/tr.js"></script>
-<script>I18N.init();document.title=tx('404.title');</script>
+<script>I18N.init().then(function(){document.title=tx('404.title');});</script>
 </body>
 </html>

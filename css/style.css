@@ -1083,3 +1083,6 @@ cg-board square.masked { background: radial-gradient(circle at 50% 18%, rgba(156
 cg-board square.revived { animation: revive .9s ease-out; box-shadow: inset 0 0 0 3px #9be8b8; }
 @keyframes revive { 0% { background: rgba(155,232,184,.9); } 100% { background: rgba(155,232,184,0); } }
 #boss-banner .bb-stat { flex: 0 0 auto; font-style: normal; font-weight: 800; font-size: 11px; color: #fff3c4; background: rgba(0,0,0,.35); border: 2px solid var(--bc, var(--red)); border-radius: 8px; padding: 1px 5px; white-space: nowrap; margin-left: auto; }
+
+/* pinch-zoom is allowed page-wide (accessibility); the board itself keeps touches for piece dragging */
+#board-wrap, #board, #board cg-board { touch-action: none; }

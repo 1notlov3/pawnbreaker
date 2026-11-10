@@ -13,7 +13,7 @@
     EVENTS.forEach(ev => Object.defineProperty(lines, ev, { get: () => {
       const k = 'talk.' + id + '.' + ev, cur = window.I18N.tables[window.I18N.lang] || {};
       if (cur[k] !== undefined) return cur[k];
-      return (window.I18N.tables.ru || {})[k] !== undefined ? tx(k) : undefined; // logs the missing key, falls back to en
+      return window.I18N.known(k) ? tx(k) : undefined; // logs the missing key, falls back to en
     } }));
     P[id] = { id, avatar: AV[id], lines, get name() { return tx('talk.' + id + '.name'); }, get title() { return tx('talk.' + id + '.title'); } };
   });

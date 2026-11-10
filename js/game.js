@@ -8,7 +8,7 @@
   const CAP = { p: 1, n: 2, b: 2, r: 3, q: 4, k: 0 };  // gold for each bot piece you take
   const LOSS = { p: 1, n: 2, b: 2, r: 3, q: 5, k: 0 }; // gold you pay when the bot takes yours
   const PN = t => tx('piece.' + t); // piece name, nominative («Knight g1»)
-  const why = r => (window.I18N.tables.ru && window.I18N.tables.ru['reason.' + r] !== undefined ? tx('reason.' + r) : r);
+  const why = r => (window.I18N.known('reason.' + r) ? tx('reason.' + r) : r);
   const START = R.initialState().board;
   let run, game, cg = null;
   const rand = a => a[Math.floor(Math.random() * a.length)];
@@ -54,6 +54,7 @@
   let shopBuys = 0;
   function newRun(opt) {
     opt = opt || {};
+    window.Bot.initStockfish(); // no-op if the background warm-up already started it
     const side = opt.side === 'b' || opt.side === 'w' ? opt.side : 'w', tier = Math.max(1, Math.min(8, opt.tier | 0 || 1));
     run = { side, tier, round: 1, gold: Math.max(0, 4 + window.tierMods(tier).startGold), earned: 0, fined: 0, wins: 0, relics: [], vouchers: [], enh: {}, items: { hints: 1, undo: 0, confuse: 0 }, next: {},
       openings: [], debuts: window.rollDebuts(side), sig: null, offer: null, sanctuarySq: null, treasureSq: null, voucher: null, shop: null, bought: [], lastPick: null, pack: null };
@@ -1285,11 +1286,12 @@
     $('op-reroll').onclick = () => opDoReroll();
     $('op-menu').innerHTML = PX('menu', 'i21'); $('op-menu').onclick = () => $('btn-menu').click();
     addEventListener('langchange', () => { if (run && run.offer && !$('opening').classList.contains('hidden')) showOpening(false); });
-    window.Bot.initStockfish();
     window.Meta.init();
+    window.Bot.preloadStockfish(); // background warm-up after the menu is up (newRun/resume start it at once)
   }
   // ---------- resume from a save (save-systems: restore at the boundary that was saved) ----------
   function resume(d) {
+    window.Bot.initStockfish();
     run = d.run; pendingGold = 0; inPlayFlag = true;
     AN('run_resume', { round: run.round, screen: d.screen, tier: run.tier, side: run.side });
     if (d.screen === 'shop' && run.shop) { show('screen-shop'); renderShop(true); if (run.pack) showPack(false); }
