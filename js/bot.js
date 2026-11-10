@@ -6,7 +6,10 @@
   let sf = null, sfReady = false, sfFailed = false, pending = null;
   const readyWaiters = [];
 
+  // idempotent: the engine (~2.3 MB JS + 1.4 MB WASM) is started lazily — when the browser is idle after the menu
+  // is up, when a run starts/resumes, or on the first engine query — so it never competes with the first paint
   function initStockfish() {
+    if (sf || sfFailed) return;
     try {
       sf = new Worker('vendor/stockfish/stockfish.js');
     } catch (e) { sfFailed = true; console.warn('Stockfish worker failed', e); return; }
@@ -64,6 +67,7 @@
   window.TIERS = TIERS; window.tierMods = tierMods;
 
   async function stockfishCandidates(fen, skill, depth, ms) {
+    if (!sf) initStockfish();
     if (sfFailed || !sf) return null;
     if (!(await whenReady(8000))) return null;
     return new Promise(resolve => {
@@ -208,5 +212,13 @@
     }
     return customMove(s, ctx, 2, 0);
   }
-  window.Bot = { params, tierMods, TIERS, tagTrap, variantTrap, SF_OK, initStockfish, chooseMove, hint, isStockfishReady: () => sfReady, isStockfishFailed: () => sfFailed };
+  // warm the engine up in the background once the page has loaded and the main thread is idle;
+  // on Save-Data / 2G connections wait until a run actually starts
+  function preloadStockfish() {
+    const c = navigator.connection;
+    if (c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || ''))) return;
+    const go = () => (window.requestIdleCallback ? requestIdleCallback(() => initStockfish(), { timeout: 3000 }) : setTimeout(initStockfish, 1500));
+    if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
+  }
+  window.Bot = { params, preloadStockfish, tierMods, TIERS, tagTrap, variantTrap, SF_OK, initStockfish, chooseMove, hint, isStockfishReady: () => sfReady, isStockfishFailed: () => sfFailed };
 })();

@@ -258,5 +258,5 @@
     track('session_start', { lang: window.I18N && window.I18N.lang, standalone: (navigator.standalone || (matchMedia && matchMedia('(display-mode: standalone)').matches)) ? 1 : 0, vw: innerWidth, returning: (+ls.get('chessrl-best-round') || 0) > 0 ? 1 : 0 });
   }
   window.Feedback = { open, flush, device, queue, get state() { return st; }, payload: v => payload(v || { liked: '', broke: '', contact: '' }), post };
-  init();
+  (window.I18N.ready || Promise.resolve()).then(init); // needs the string tables (they load on demand, see i18n.js)
 })();

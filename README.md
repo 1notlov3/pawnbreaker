@@ -1,4 +1,4 @@
-# Pawnbreaker — a chess roguelike (Alpha v0.3)
+# Pawnbreaker — a chess roguelike (Alpha v0.4.4)
 
 Play: **https://pawnbreaker.app**
 
